@@ -51,7 +51,7 @@ GoFOFA是一款使用Go语言编写的命令行FOFA查询工具，他除了具�
 - 下载gofofa:
 
 ```
-$ go install github.com/LubyRuffy/gofofa/cmd/fofa@latest
+$ go install github.com/FofaInfo/GoFOFA/cmd/fofa@latest
 ```
 
 - 显示如下表示安装成功:
@@ -293,7 +293,12 @@ $ fofa count port=80
 ### 查询实用功能
 #### 批量搜索
 
-通过`dump`模块的`--batchType`参数开启批量搜索，如果不使用此参数，应当输入正常的fofa语句:
+通过dump模块的--batchType参数开启批量搜索，目前可以生成批量搜索的字段包括：ip,domain。
+
+ip批量搜索会将文件中的ip以100为一组生成批量搜索的语句，domain批量搜索会将文件中的domain以50为一组生成批量搜索的语句。
+
+如文件中有1000个ip，将自动生成10组查询语句完成批量搜索。
+
 
 ```shell
 $ cat ip.txt
@@ -318,7 +323,7 @@ $ fofa dump -i ip.txt -bt ip
 ......
 ```
 
-也可以输出到文件中，结果会打印输出进度:
+一般都会输出到文件中，输出结果会打印输出进度:
 
 ```shell
 $ fofa dump -i ip.txt -bt ip -o dump.csv
@@ -327,23 +332,16 @@ $ fofa dump -i ip.txt -bt ip -o dump.csv
 ......
 ```
 
-`--batchSize`可以用来设置每组下载数量，默认为1000，`--size`为总共拉去数量，默认为-1代表获取全部:
+--batchSize可以用来设置每次拉取的数量，默认为1000。如一组批量查询结果有20000条数据，默认每次拉取数量为1000条，则需要执行拉取20次，完成后继续执行下一组查询语句。
+
+--size为每组需要拉取的总数据量，默认为-1代表获取所有数据。
 
 ```shell
-$ fofa dump -o dump.csv port=3306
-2024/11/25 15:42:50 dump data of query: port=3306
-2024/11/25 15:42:52 size: 1000/13122886, 0.01%
-2024/11/25 15:42:54 size: 2000/13122886, 0.02%
-......
-$ fofa dump --batchSize 10000 -o dump.csv port=3306
-2024/11/25 15:45:53 dump data of query: port=3306
-2024/11/25 15:45:56 size: 10000/13122889, 0.08%
-2024/11/25 15:45:58 size: 20000/13122889, 0.15%
-......
-$ fofa dump --batchSize 20000 --size 40000 -o dump.csv port=3306
-2024/11/25 15:47:21 dump data of query: port=3306
-2024/11/25 15:47:25 size: 20000/13120735, 0.15%
-2024/11/25 15:47:35 size: 40000/13120736, 0.30%
+$ fofa dump -i ip.txt -bt ip -o dump.csv
+2024/11/25 17:39:05 dump data of query: ip=112.25.151.122 || ... || ip=58.213.160.221
+2024/11/25 17:39:06 size: 115/115, 100.00%
+2024/11/25 17:39:06 dump data of query: ip=221.226.119.3 || ... || ip=221.226.6.2
+2024/11/25 17:39:12 size: 153/153, 100.00%
 ```
 
 #### URL拼接

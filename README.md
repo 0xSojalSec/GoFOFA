@@ -51,7 +51,7 @@ Note: Some data processing functions have necessary field requirements. Please e
 - Download GoFOFA:
 
 ```
-$ go install github.com/LubyRuffy/gofofa/cmd/fofa@latest
+$ go install github.com/FofaInfo/GoFOFA/cmd/fofa@latest
 ```
 
 - If the following is displayed, it indicates a successful installation:
@@ -290,19 +290,54 @@ $ fofa count port=80
 ### Query Function Module
 #### Batch Search
 
-Enable batch search through the `--batchType` parameter of the search module, and use it in conjunction with the `--template` parameter.
+Enable batch search through the `--batchType` parameter in the `dump` module. Currently, supported batch search fields include: `ip` and `domain`.
+
+IP batch search groups the IPs in the file into batches of 100 to generate batch search queries, while domain batch search groups the domains into batches of 50.
+
+For example, if the file contains 1,000 IPs, 10 groups of queries will be automatically generated to complete the batch search.
 
 ```shell
 $ cat ip.txt
 106.75.95.206
 123.58.224.8
-$ fofa search -i ip.txt --batchType ip --template {}
-2024/11/22 11:26:09 not set fofa query, now in pipeline mode....
-2024/11/22 11:26:09 query fofa of: ip=106.75.95.206 || ip=123.58.224.8
+$ fofa dump -i ip.txt --batchType ip
+2024/11/25 14:51:10 dump data of query: ip=106.75.95.206 || ip=123.58.224.8
 123.58.224.8,40544
 123.58.224.8,31497
 106.75.95.206,80
 ......
+```
+
+Or a more concise format:
+
+```shell
+$ fofa dump -i ip.txt -bt ip
+2024/11/25 14:51:10 dump data of query: ip=106.75.95.206 || ip=123.58.224.8
+123.58.224.8,40544
+123.58.224.8,31497
+106.75.95.206,80
+......
+```
+
+Output is usually written to a file, and the progress of the output is displayed:
+
+```shell
+$ fofa dump -i ip.txt -bt ip -o dump.csv
+2024/11/25 14:51:10 dump data of query: ip=106.75.95.206 || ip=123.58.224.8
+2024/11/25 14:52:03 size: 188/188, 100.00%
+......
+```
+
+The `--batchSize` parameter can be used to set the number of entries fetched in each request. The default value is 1,000. For instance, if a batch query contains 20,000 entries, and the default fetch size is 1,000, it will require 20 fetches to complete, after which the next query group will be executed.
+
+The `--size` parameter specifies the total number of entries to be fetched for each group. The default value is `-1`, meaning all data will be fetched.
+
+```shell
+$ fofa dump -i ip.txt -bt ip -o dump.csv
+2024/11/25 17:39:05 dump data of query: ip=112.25.151.122 || ... || ip=58.213.160.221
+2024/11/25 17:39:06 size: 115/115, 100.00%
+2024/11/25 17:39:06 dump data of query: ip=221.226.119.3 || ... || ip=221.226.6.2
+2024/11/25 17:39:12 size: 153/153, 100.00%
 ```
 
 #### URL Concatenation
