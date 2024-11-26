@@ -29,6 +29,8 @@ builds:
     gcflags:
       - all=-trimpath={{.Env.GOPATH}}
       - ./dontoptimizeme=-N
+    ldflags:
+      - "-s -w"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
